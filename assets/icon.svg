@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+
+  <!-- shield body -->
+  <path d="M128 14
+           L226 52
+           V124
+           C226 186 184 228 128 244
+           C72 228 30 186 30 124
+           V52 Z"
+        fill="url(#shield)" stroke="url(#rim)" stroke-width="8" stroke-linejoin="round"/>
+
+  <!-- padlock shackle -->
+  <path d="M102 116 v-22 a26 26 0 0 1 52 0 v22"
+        fill="none" stroke="#34d399" stroke-width="13" stroke-linecap="round"/>
+
+  <!-- padlock body -->
+  <rect x="86" y="114" width="84" height="62" rx="13" fill="#34d399"/>
+
+  <!-- $ keyhole: env vars under lock -->
+  <text x="128" y="160" text-anchor="middle"
+        font-family="SF Mono, Menlo, Consolas, monospace" font-size="44"
+        font-weight="700" fill="#0f172a">$</text>
+
+  <!-- redacted env lines -->
+  <rect x="88" y="190" width="80" height="9" rx="4.5" fill="#34d399" opacity="0.55"/>
+  <rect x="100" y="206" width="56" height="9" rx="4.5" fill="#34d399" opacity="0.3"/>
+</svg>

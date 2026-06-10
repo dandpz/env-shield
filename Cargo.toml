@@ -1,0 +1,41 @@
+[package]
+name = "env-shield"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Encrypted local vault that replaces plaintext .env files"
+license = "MIT"
+repository = "https://github.com/dandpz/env-shield"
+keywords = ["env", "secrets", "vault", "dotenv", "encryption"]
+categories = ["command-line-utilities", "cryptography"]
+
+[dependencies]
+anyhow = "1"
+argon2 = "0.5"
+chacha20poly1305 = "0.10"
+clap = { version = "4", features = ["derive"] }
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service", "vendored"] }
+rand_core = { version = "0.6", features = ["getrandom"] }
+rpassword = "7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+zeroize = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints.rust]
+unsafe_code = "forbid"
+rust-2018-idioms = { level = "warn", priority = -1 }
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# Doc-comment lints are overkill for a binary crate's internal modules.
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
