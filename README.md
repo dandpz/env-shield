@@ -31,6 +31,9 @@ Set `DATABASE_URL` in environment `default` (1 secrets)
 $ evs env add staging
 $ evs set DATABASE_URL --env staging
 
+$ evs import .env                          # migrate an existing .env file
+$ evs import .env.staging                  # file name targets the `staging` env
+
 $ evs run -- npm start                     # inject the default environment
 $ evs run --env staging -- npm start
 $ evs env use staging                      # make staging the new default
@@ -42,6 +45,7 @@ $ evs env use staging                      # make staging the new default
 |---|---|
 | `init [--no-keychain]` | Create a new vault (in the working directory by default) with an empty `default` environment; if a `.gitignore` exists next to it, the vault file is appended to it. Stores the master password in the OS keychain unless `--no-keychain` is given |
 | `set <KEY> [VALUE] [--env NAME]` | Add or update a secret (omit `VALUE` for a hidden prompt) |
+| `import <FILE> [--env NAME]` | Import an existing `.env` file into an environment. A file named `.env.<name>` targets the environment `<name>` automatically; `--env` overrides the inference. Existing keys are overwritten |
 | `view [--keys-only] [--env NAME]` | Decrypt and print an environment's contents |
 | `run [--env NAME] -- <COMMAND> [ARGS...]` | Run a command with the secrets injected into its environment |
 | `env list` | List environments (`*` marks the default) |
@@ -53,9 +57,12 @@ $ evs env use staging                      # make staging the new default
 | `keychain status` | Show whether a master password is stored for this vault |
 
 A global `--vault <FILE>` flag (default: `./.env-shield`) selects the vault
-file. Environments are never created implicitly: `set --env prdo` with a
-typo'd name fails loudly instead of silently storing the secret in a fresh
-environment.
+file. Environments are never created implicitly: `set --env prdo` (or an
+`import` whose target does not exist) fails loudly instead of silently
+storing the secrets in a fresh environment.
+
+`import` does not delete the source file — remove the plaintext `.env`
+yourself once you have verified the import with `evs view`.
 
 The `run` subcommand waits for the child and exits with the child's exact
 exit code (or `128 + signal` if the child was killed by a signal on Unix),

@@ -59,6 +59,21 @@ pub enum Commands {
         env: Option<String>,
     },
 
+    /// Import variables from an existing .env file into an environment
+    ///
+    /// The target environment must already exist. When --env is omitted, a
+    /// file named `.env.<name>` is imported into the environment `<name>`;
+    /// any other file name targets the vault's default environment.
+    Import {
+        /// Path to the .env file to import
+        #[arg(value_name = "FILE")]
+        file: PathBuf,
+
+        /// Target environment (overrides the name inferred from the file name)
+        #[arg(short, long, value_name = "NAME")]
+        env: Option<String>,
+    },
+
     /// Decrypt an environment and print its contents to stdout
     View {
         /// Print only the variable names, not the values
