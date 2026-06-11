@@ -20,12 +20,17 @@ fn run(vault: &Path, args: &[&str], stdin_data: &str) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .expect("failed to spawn env-shield");
-    child
+    // The child may exit before reading stdin (e.g. `import` bails on a
+    // parse error before ever prompting for the password); writing into the
+    // closed pipe is then EPIPE, not a test failure.
+    if let Err(e) = child
         .stdin
         .as_mut()
         .unwrap()
         .write_all(stdin_data.as_bytes())
-        .unwrap();
+    {
+        assert_eq!(e.kind(), std::io::ErrorKind::BrokenPipe, "{e}");
+    }
     child.wait_with_output().unwrap()
 }
 
