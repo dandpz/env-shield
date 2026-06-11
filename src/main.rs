@@ -21,7 +21,7 @@ fn main() {
     let code = match dispatch(cli) {
         Ok(code) => code,
         Err(err) => {
-            eprintln!("env-shield: {err:#}");
+            eprintln!("evs: {err:#}");
             1
         }
     };
@@ -72,10 +72,10 @@ fn cmd_init(vault_path: &Path, no_keychain: bool) -> Result<()> {
     } else if keychain::store(vault_path, &password).is_ok() {
         println!(
             "Master password stored in the OS keychain; `run` will not prompt \
-             (undo with `env-shield keychain forget`)"
+             (undo with `evs keychain forget`)"
         );
     } else {
-        eprintln!("env-shield: no usable OS keychain; `run` will prompt for the master password");
+        eprintln!("evs: no usable OS keychain; `run` will prompt for the master password");
     }
     Ok(())
 }
@@ -181,7 +181,7 @@ fn cmd_view(vault_path: &Path, keys_only: bool, env: Option<&str>) -> Result<()>
 fn cmd_run(vault_path: &Path, env: Option<&str>, command: &[String]) -> Result<i32> {
     let (program, args) = command
         .split_first()
-        .context("no command specified; usage: env-shield run -- <COMMAND> [ARGS...]")?;
+        .context("no command specified; usage: evs run -- <COMMAND> [ARGS...]")?;
 
     // Keychain first — `run` is the hot path and must not prompt when the
     // password was stored at `init` (or via `keychain store`).
@@ -191,11 +191,11 @@ fn cmd_run(vault_path: &Path, env: Option<&str>, command: &[String]) -> Result<i
             Err(vault::VaultError::Crypto(_)) => {
                 // Stale entry (vault re-created with a new password):
                 // fall back to prompting and re-sync the keychain.
-                eprintln!("env-shield: keychain password is stale, falling back to prompt");
+                eprintln!("evs: keychain password is stale, falling back to prompt");
                 let password = prompt_password("Master password: ")?;
                 let vault = vault::load(vault_path, password.as_bytes())?;
                 if keychain::store(vault_path, &password).is_ok() {
-                    eprintln!("env-shield: keychain updated");
+                    eprintln!("evs: keychain updated");
                 }
                 vault
             }
@@ -218,7 +218,7 @@ fn cmd_run(vault_path: &Path, env: Option<&str>, command: &[String]) -> Result<i
         .collect();
 
     eprintln!(
-        "env-shield: injecting {} variable(s) from environment `{env_name}`",
+        "evs: injecting {} variable(s) from environment `{env_name}`",
         injected.len()
     );
 
@@ -249,10 +249,10 @@ fn cmd_run(vault_path: &Path, env: Option<&str>, command: &[String]) -> Result<i
         .map(|(key, _)| key.as_str())
         .collect();
     if leaked.is_empty() {
-        eprintln!("env-shield: child exited; parent environment verified clean");
+        eprintln!("evs: child exited; parent environment verified clean");
     } else {
         eprintln!(
-            "env-shield: WARNING: variables leaked into the parent environment: {}",
+            "evs: WARNING: variables leaked into the parent environment: {}",
             leaked.join(", ")
         );
     }

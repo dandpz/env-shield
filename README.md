@@ -6,7 +6,8 @@
 
 An encrypted local vault that replaces plaintext `.env` files.
 
-`env-shield` stores your environment variables in a single password-protected,
+`env-shield` — installed as the `evs` command (**E**nv **V**ault **S**hield) —
+stores your environment variables in a single password-protected,
 authenticated-encryption vault file and injects them **directly into a child
 process's environment** at launch time. Secrets never sit on disk in
 plaintext, are never exported into your shell, and are wiped from memory as
@@ -17,22 +18,22 @@ A vault holds **multiple named environments** (e.g. `dev`, `staging`,
 `--env`.
 
 ```console
-$ env-shield init
+$ evs init
 New master password: ********
 Confirm master password: ********
 Initialized vault at `.env-shield` with environment `default`
 
-$ env-shield set DATABASE_URL              # value entered via hidden prompt
+$ evs set DATABASE_URL                     # value entered via hidden prompt
 Master password: ********
 Value for DATABASE_URL: ********
 Set `DATABASE_URL` in environment `default` (1 secrets)
 
-$ env-shield env add staging
-$ env-shield set DATABASE_URL --env staging
+$ evs env add staging
+$ evs set DATABASE_URL --env staging
 
-$ env-shield run -- npm start              # inject the default environment
-$ env-shield run --env staging -- npm start
-$ env-shield env use staging               # make staging the new default
+$ evs run -- npm start                     # inject the default environment
+$ evs run --env staging -- npm start
+$ evs env use staging                      # make staging the new default
 ```
 
 ## Commands

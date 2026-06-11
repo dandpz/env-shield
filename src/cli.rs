@@ -6,10 +6,10 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(
-    name = "env-shield",
+    name = "evs",
     version,
     about = "Encrypted local vault that replaces plaintext .env files",
-    long_about = "env-shield stores environment variables in a password-protected,\n\
+    long_about = "evs (Env Vault Shield) stores environment variables in a password-protected,\n\
                   authenticated-encryption vault and injects them directly into a\n\
                   child process's environment, so secrets never sit on disk in\n\
                   plaintext. A vault holds multiple named environments (e.g. dev,\n\
@@ -72,7 +72,7 @@ pub enum Commands {
 
     /// Run a command with the decrypted secrets injected into its environment
     ///
-    /// Example: env-shield run --env staging -- npm start
+    /// Example: evs run --env staging -- npm start
     Run {
         /// Environment to inject (defaults to the vault's default environment)
         #[arg(short, long, value_name = "NAME")]

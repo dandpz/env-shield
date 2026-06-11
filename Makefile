@@ -33,7 +33,7 @@ check: fmt-check lint test ## Everything CI runs — use before pushing
 msrv: ## Verify the declared minimum Rust version compiles
 	$(CARGO) +$(MSRV) check --all-targets
 
-install: ## Install env-shield into ~/.cargo/bin
+install: ## Install evs into ~/.cargo/bin
 	$(CARGO) install --path . --locked
 
 clean: ## Remove build artifacts

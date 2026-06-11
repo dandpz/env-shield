@@ -11,7 +11,7 @@ const PW: &str = "test-password\n";
 const PW_TWICE: &str = "test-password\ntest-password\n";
 
 fn run(vault: &Path, args: &[&str], stdin_data: &str) -> Output {
-    let mut child = Command::new(env!("CARGO_BIN_EXE_env-shield"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_evs"))
         .arg("--vault")
         .arg(vault)
         .args(args)

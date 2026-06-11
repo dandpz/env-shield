@@ -41,16 +41,16 @@ pub const DEFAULT_ENV: &str = "default";
 
 #[derive(Debug, Error)]
 pub enum VaultError {
-    #[error("no vault found at `{0}`; run `env-shield init` first")]
+    #[error("no vault found at `{0}`; run `evs init` first")]
     NotFound(String),
     #[error("`{0}` is not an env-shield vault or is corrupted")]
     Malformed(String),
-    #[error("environment `{0}` does not exist (create it with `env-shield env add {0}`)")]
+    #[error("environment `{0}` does not exist (create it with `evs env add {0}`)")]
     NoSuchEnv(String),
     #[error("environment `{0}` already exists")]
     EnvExists(String),
     #[error(
-        "cannot remove `{0}`: it is the default environment (switch first with `env-shield env use <other>`)"
+        "cannot remove `{0}`: it is the default environment (switch first with `evs env use <other>`)"
     )]
     RemoveDefault(String),
     #[error("invalid environment name `{0}`")]

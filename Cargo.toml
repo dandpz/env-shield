@@ -9,6 +9,11 @@ repository = "https://github.com/dandpz/env-shield"
 keywords = ["env", "secrets", "vault", "dotenv", "encryption"]
 categories = ["command-line-utilities", "cryptography"]
 
+# Installed command is `evs` (Env Vault Shield); the crate keeps its full name.
+[[bin]]
+name = "evs"
+path = "src/main.rs"
+
 [dependencies]
 anyhow = "1"
 argon2 = "0.5"
