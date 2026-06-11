@@ -20,12 +20,17 @@ fn run(vault: &Path, args: &[&str], stdin_data: &str) -> Output {
         .stderr(Stdio::piped())
         .spawn()
         .expect("failed to spawn env-shield");
-    child
+    // The child may exit before reading stdin (e.g. `import` bails on a
+    // parse error before ever prompting for the password); writing into the
+    // closed pipe is then EPIPE, not a test failure.
+    if let Err(e) = child
         .stdin
         .as_mut()
         .unwrap()
         .write_all(stdin_data.as_bytes())
-        .unwrap();
+    {
+        assert_eq!(e.kind(), std::io::ErrorKind::BrokenPipe, "{e}");
+    }
     child.wait_with_output().unwrap()
 }
 
@@ -207,6 +212,100 @@ fn init_without_gitignore_does_not_create_one() {
     assert!(out.status.success());
     assert!(!stdout(&out).contains(".gitignore"));
     assert!(!dir.path().join(".gitignore").exists());
+}
+
+#[test]
+fn import_into_default_environment() {
+    let dir = tempfile::tempdir().unwrap();
+    let vault = dir.path().join("vault");
+    setup_vault(&vault);
+
+    let env_file = dir.path().join(".env");
+    std::fs::write(
+        &env_file,
+        "# comment\nexport API_KEY=\"sk-123\"\nGREETING=imported\n",
+    )
+    .unwrap();
+
+    let out = run(&vault, &["import", env_file.to_str().unwrap()], PW);
+    assert!(out.status.success(), "stderr was: {}", stderr(&out));
+    assert!(stdout(&out).contains("Imported 2 variable(s) into environment `default`"));
+
+    // Existing key overwritten, new key added, quotes stripped.
+    let out = run(&vault, &["view"], PW);
+    assert_eq!(stdout(&out), "API_KEY=sk-123\nGREETING=imported\n");
+}
+
+#[test]
+fn import_infers_environment_from_file_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let vault = dir.path().join("vault");
+    setup_vault(&vault);
+
+    let env_file = dir.path().join(".env.staging");
+    std::fs::write(&env_file, "EXTRA=from-file\n").unwrap();
+
+    let out = run(&vault, &["import", env_file.to_str().unwrap()], PW);
+    assert!(out.status.success(), "stderr was: {}", stderr(&out));
+    assert!(stdout(&out).contains("environment `staging`"));
+
+    let out = run(&vault, &["view", "--env", "staging"], PW);
+    assert!(stdout(&out).contains("EXTRA=from-file"));
+
+    // The default environment is untouched.
+    let out = run(&vault, &["view"], PW);
+    assert!(!stdout(&out).contains("EXTRA"));
+}
+
+#[test]
+fn import_never_creates_an_environment() {
+    let dir = tempfile::tempdir().unwrap();
+    let vault = dir.path().join("vault");
+    setup_vault(&vault);
+
+    // Inferred name `prod` does not exist — must fail loudly, and the
+    // explicit flag behaves the same.
+    let env_file = dir.path().join(".env.prod");
+    std::fs::write(&env_file, "KEY=value\n").unwrap();
+
+    let out = run(&vault, &["import", env_file.to_str().unwrap()], PW);
+    assert!(!out.status.success());
+    assert!(
+        stderr(&out).contains("does not exist"),
+        "stderr was: {}",
+        stderr(&out)
+    );
+
+    let out = run(
+        &vault,
+        &["import", env_file.to_str().unwrap(), "--env", "prdo"],
+        PW,
+    );
+    assert!(!out.status.success());
+    assert!(stderr(&out).contains("does not exist"));
+}
+
+#[test]
+fn import_rejects_malformed_file_without_echoing_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let vault = dir.path().join("vault");
+    setup_vault(&vault);
+
+    let env_file = dir.path().join(".env");
+    std::fs::write(&env_file, "GOOD=ok\nsecret-blob-no-equals\n").unwrap();
+
+    let out = run(&vault, &["import", env_file.to_str().unwrap()], PW);
+    assert!(!out.status.success());
+    let err = stderr(&out);
+    assert!(err.contains("line 2"), "stderr was: {err}");
+    assert!(
+        !err.contains("secret-blob-no-equals"),
+        "file content leaked into stderr: {err}"
+    );
+
+    // A failed import must not have touched the vault.
+    let out = run(&vault, &["view"], PW);
+    assert!(!stdout(&out).contains("GOOD"));
 }
 
 #[test]

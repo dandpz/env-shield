@@ -2,6 +2,7 @@
 
 mod cli;
 mod crypto;
+mod dotenv;
 mod keychain;
 mod vault;
 
@@ -37,6 +38,7 @@ fn dispatch(cli: Cli) -> Result<i32> {
         Commands::Set { key, value, env } => {
             cmd_set(&cli.vault, key, value, env.as_deref()).map(|()| 0)
         }
+        Commands::Import { file, env } => cmd_import(&cli.vault, &file, env.as_deref()).map(|()| 0),
         Commands::View { keys_only, env } => {
             cmd_view(&cli.vault, keys_only, env.as_deref()).map(|()| 0)
         }
@@ -146,6 +148,48 @@ fn cmd_set(vault_path: &Path, key: String, value: Option<String>, env: Option<&s
     vault::save(vault_path, password.as_bytes(), &vault)?;
     println!("Set `{key_display}` in environment `{env_name}` ({count} secrets)");
     Ok(())
+}
+
+/// Imports a `.env` file into one environment of the vault. Existing keys
+/// are overwritten (the displaced values are wiped); the environment itself
+/// must already exist — import never creates one implicitly.
+fn cmd_import(vault_path: &Path, file: &Path, env: Option<&str>) -> Result<()> {
+    let content = Zeroizing::new(
+        std::fs::read_to_string(file)
+            .with_context(|| format!("failed to read `{}`", file.display()))?,
+    );
+    let entries =
+        dotenv::parse(&content).with_context(|| format!("failed to parse `{}`", file.display()))?;
+    if entries.is_empty() {
+        bail!("`{}` contains no variables", file.display());
+    }
+
+    let inferred = infer_env_name(file);
+    let env = env.or(inferred.as_deref());
+
+    let password = prompt_password("Master password: ")?;
+    let mut vault = vault::load(vault_path, password.as_bytes())?;
+    let env_name = vault.resolve_name(env).to_string();
+
+    let count = entries.len();
+    let secrets = vault.secrets_mut(env)?;
+    for (key, value) in entries {
+        secrets.insert(key, value);
+    }
+    let total = secrets.len();
+    vault::save(vault_path, password.as_bytes(), &vault)?;
+    println!("Imported {count} variable(s) into environment `{env_name}` ({total} secrets)");
+    Ok(())
+}
+
+/// A file named `.env.<name>` targets the environment `<name>`; any other
+/// file name (including plain `.env`) targets the vault's default.
+fn infer_env_name(file: &Path) -> Option<String> {
+    file.file_name()?
+        .to_str()?
+        .strip_prefix(".env.")
+        .filter(|name| !name.is_empty())
+        .map(str::to_owned)
 }
 
 fn cmd_view(vault_path: &Path, keys_only: bool, env: Option<&str>) -> Result<()> {
