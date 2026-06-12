@@ -1,0 +1,10 @@
+# Release automation config — see CLAUDE.md "Releases" and
+# https://release-plz.dev/docs/config
+[workspace]
+# release.yml creates the GitHub Release (with binary assets) when the
+# tag is pushed; release-plz must not create a duplicate one.
+git_release_enable = false
+changelog_update = true
+git_tag_name = "v{{ version }}"
+# Binary crate with no public API — semver checks add nothing.
+semver_check = false
