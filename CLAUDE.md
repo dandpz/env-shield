@@ -21,6 +21,15 @@ cargo test --test cli                   # run only the e2e CLI tests
 
 CI (`.github/workflows/ci.yml`) runs fmt-check, clippy with warnings denied, tests on Linux + macOS, and an MSRV (1.85) check. Clippy `pedantic` is enabled as warnings via Cargo.toml lints; `unsafe_code` is forbidden.
 
+## Releases
+
+Fully automated via release-plz; never bump the version or tag by hand.
+
+- Conventional commits land on `main` → `release-plz.yml` opens/updates a release PR (version bump + `CHANGELOG.md`). Merging that PR publishes to crates.io and pushes tag `v{version}`.
+- The tag triggers `release.yml`, which builds 6 targets and attaches archives + `SHA256SUMS` to a GitHub Release. `release-plz.toml` sets `git_release_enable = false` so release-plz doesn't create a duplicate release.
+- The binary name `evs` is coupled in three places: `[[bin]]` in Cargo.toml, the Package step in `release.yml` (`cp .../release/evs`), and `[package.metadata.binstall] bin-dir`. The archive naming `env-shield-{version}-{target}` is likewise coupled between `release.yml`, the binstall `pkg-url`/`bin-dir`, and `install.sh`. Change any of these together.
+- Secrets: `RELEASE_PLZ_TOKEN` (fine-grained PAT — the default `GITHUB_TOKEN` cannot push tags that trigger other workflows) and `CARGO_REGISTRY_TOKEN`.
+
 ## Architecture
 
 Four modules, layered with no cycles:

@@ -58,12 +58,12 @@ jobs:
           name="env-shield-${version}-${{ matrix.target }}"
           mkdir "$name"
           if [[ "${{ matrix.target }}" == *windows* ]]; then
-            cp "target/${{ matrix.target }}/release/env-shield.exe" "$name/"
+            cp "target/${{ matrix.target }}/release/evs.exe" "$name/"
             cp README.md LICENSE "$name/"
             7z a "${name}.zip" "$name"
             asset="${name}.zip"
           else
-            cp "target/${{ matrix.target }}/release/env-shield" "$name/"
+            cp "target/${{ matrix.target }}/release/evs" "$name/"
             cp README.md LICENSE "$name/"
             tar czf "${name}.tar.gz" "$name"
             asset="${name}.tar.gz"

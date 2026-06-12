@@ -39,6 +39,32 @@ $ evs run --env staging -- npm start
 $ evs env use staging                      # make staging the new default
 ```
 
+## Installation
+
+Prebuilt binaries (fastest, via [cargo-binstall](https://github.com/cargo-bins/cargo-binstall)):
+
+```console
+$ cargo binstall env-shield
+```
+
+Install script (Linux/macOS — downloads the latest release binary and
+verifies its checksum):
+
+```console
+$ curl -fsSL https://raw.githubusercontent.com/dandpz/env-shield/main/install.sh | sh
+```
+
+Build from source:
+
+```console
+$ cargo install env-shield
+```
+
+Or download an archive for your platform from the
+[releases page](https://github.com/dandpz/env-shield/releases) and verify it
+against the `SHA256SUMS` file attached to the release. The binary inside is
+named `evs`.
+
 ## Commands
 
 | Command | Description |

@@ -8,11 +8,23 @@ license = "MIT"
 repository = "https://github.com/dandpz/env-shield"
 keywords = ["env", "secrets", "vault", "dotenv", "encryption"]
 categories = ["command-line-utilities", "cryptography"]
+# Keep the published package to what `cargo install` needs.
+include = ["src/**", "LICENSE", "README.md"]
 
 # Installed command is `evs` (Env Vault Shield); the crate keeps its full name.
 [[bin]]
 name = "evs"
 path = "src/main.rs"
+
+# `cargo binstall env-shield` — must match the archive layout produced by
+# the Package step in .github/workflows/release.yml.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
 
 [dependencies]
 anyhow = "1"
