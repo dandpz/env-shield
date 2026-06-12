@@ -28,7 +28,7 @@ Fully automated via release-plz; never bump the version or tag by hand.
 - Conventional commits land on `main` → `release-plz.yml` opens/updates a release PR (version bump + `CHANGELOG.md`). Merging that PR publishes to crates.io and pushes tag `v{version}`.
 - The tag triggers `release.yml`, which builds 6 targets and attaches archives + `SHA256SUMS` to a GitHub Release. `release-plz.toml` sets `git_release_enable = false` so release-plz doesn't create a duplicate release.
 - The binary name `evs` is coupled in three places: `[[bin]]` in Cargo.toml, the Package step in `release.yml` (`cp .../release/evs`), and `[package.metadata.binstall] bin-dir`. The archive naming `env-shield-{version}-{target}` is likewise coupled between `release.yml`, the binstall `pkg-url`/`bin-dir`, and `install.sh`. Change any of these together.
-- Secrets: `RELEASE_PLZ_TOKEN` (fine-grained PAT — the default `GITHUB_TOKEN` cannot push tags that trigger other workflows) and `CARGO_REGISTRY_TOKEN`.
+- Secrets: `RELEASE_PLZ_TOKEN` (fine-grained PAT — the default `GITHUB_TOKEN` cannot push tags that trigger other workflows). crates.io auth uses trusted publishing (OIDC via `rust-lang/crates-io-auth-action`); there is no registry token to rotate.
 
 ## Architecture
 
